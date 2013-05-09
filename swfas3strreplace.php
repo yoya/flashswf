@@ -91,7 +91,6 @@ for ($i = 2 ; ($i + 1) < $argc ; $i += 2) {
 }
 
 $swf = swfparse($data, $replaceTable);
-// swfas3dump($swf); exit(0);
 // $swf['data'] = "datalen:".strlen($swf['data']); var_dump($swf);
 
 $n = swfas3strreplace($swf, $replaceTable);
