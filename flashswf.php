@@ -29,9 +29,7 @@ function swfparse($data) {
     $swf['data'] = $data;
     $swf['sig'] = substr($data, 0, 3);
     $swf['version'] = ord($data[3]);
-//    $fileLength = unpack_once('V', substr($data, 4, 4));
-//    $swf['length'] = $fileLength;
-    $offset += 4;
+    $fileLength = unpack_once('V', substr($data, 4, 4));
     if ($swf['sig'] === 'CWS') {
         $data = substr($data, 0, 8) . gzuncompress(substr($data, 8));
         $swf['data'] = $data;
