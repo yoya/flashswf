@@ -1,6 +1,6 @@
 <?php
 /*
- * (c) 2011/5/8- yoya@awm.jp
+ * (c) 2013/5/8- yoya@awm.jp
  */
 
 require_once 'flashswf.php';

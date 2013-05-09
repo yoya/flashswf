@@ -1,6 +1,6 @@
 <?php
 /*
- * (c) 2011/5/9- yoya@awm.jp
+ * (c) 2013/5/9- yoya@awm.jp
  */
 
 function unpack_once($v, $f) { $t = unpack($v, $f) ; return $t[1]; }
@@ -118,5 +118,5 @@ function swfbuild($swf) {
     } else if ($sig === 'ZWS') {
         $movie = lzcompress($movie);
     }
-    return $sig.chr($swf['version']).pack('V', $length) . $movie;
+    return $sig.pack('CV', $swf['version'], $length) . $movie;
 }
