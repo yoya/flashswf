@@ -6,6 +6,61 @@
 require_once 'flashswf.php';
 require_once 'as3abc.php';
 
+function swfas3strpos($swf, $tag) {
+    $data = $swf['data'];
+    $offset = $tag['payloadOffset'];
+    /*
+     * DoABC fields
+     */
+    $offset += 4; // u32 skip
+    $name = swfSkip_string($data, $offset);
+    /*
+     * ABC ByteCode
+     */
+    // version
+    $offset += 2 + 2; // minor_version , major_version
+    // constant pool
+    $int_count = abcRead_u30($data, $offset);
+    for ($i = 1 ; $i < $int_count ; $i++) {
+        $integer = abcSkip_s32($data, $offset);
+    }
+    $uint_count = abcRead_u30($data, $offset);
+    for ($i = 1 ; $i < $uint_count ; $i++) {
+        $uinteger = abcSkip_u32($data, $offset);
+    }
+    $double_count = abcRead_u30($data, $offset);
+    for ($i = 1 ; $i < $double_count ; $i++) {
+        $offset += 8; // skip d64
+    }
+    /*
+     * replace string
+     */
+    return $offset;
+}
+
+
+function swfas3strlist($swf) {
+    $data = $swf['data'];
+    foreach ($swf['tagRefs'] as $tag) {
+        if ($tag['code'] !== 82) {
+            continue; // skip if is not DoABC tag.
+        }
+        $offset = swfas3strpos($swf, $tag);
+        $offsetStartOfString = $offset;
+        $string_count = abcRead_u30($data, $offset);
+        echo "string_count: $string_count\n";
+        if ($string_count > 0) {
+            echo "\t[0]: (null string)\n";
+        }
+        $replacedStrings = array();
+        $nReplaced = 0;
+        for ($i = 1 ; $i < $string_count ; $i++) {
+            $string = abcRead_string($data, $offset);
+            echo "\t[$i]: $string\n";
+        }
+    }
+}
+
 function swfas3strreplace(&$swf, $replaceTable) {
     $data = $swf['data'];
     $nTotalReplaced = 0;
@@ -13,33 +68,7 @@ function swfas3strreplace(&$swf, $replaceTable) {
         if ($tag['code'] !== 82) {
             continue; // skip if is not DoABC tag.
         }
-        $offset = $tag['payloadOffset'];
-        /*
-         * DoABC fields
-         */
-        $offset += 4; // u32 skip
-        $name = swfSkip_string($data, $offset);
-        /*
-         * ABC ByteCode
-         */
-        // version
-        $offset += 2 + 2; // minor_version , major_version
-        // constant pool
-        $int_count = abcRead_u30($data, $offset);
-        for ($i = 1 ; $i < $int_count ; $i++) {
-            $integer = abcSkip_s32($data, $offset);
-        }
-        $uint_count = abcRead_u30($data, $offset);
-        for ($i = 1 ; $i < $uint_count ; $i++) {
-            $uinteger = abcSkip_u32($data, $offset);
-        }
-        $double_count = abcRead_u30($data, $offset);
-        for ($i = 1 ; $i < $double_count ; $i++) {
-            $offset += 8; // skip d64
-        }
-        /*
-         * replace string
-         */
+        $offset = swfas3strpos($swf, $tag);
         $offsetStartOfString = $offset;
         $string_count = abcRead_u30($data, $offset);
         $replacedStrings = array();
@@ -78,7 +107,8 @@ function swfas3strreplace(&$swf, $replaceTable) {
 
 // main
 
-if ($argc < 4) {
+if ($argc < 2) {
+    fputs(STDERR, "Usage: swfas3strreplace.php <swf> # listing\n");
     fputs(STDERR, "Usage: swfas3strreplace.php <swf> <from> <to> [<from2> <to2> [...]]\n");
     exit (1);
 }
@@ -93,6 +123,11 @@ for ($i = 2 ; ($i + 1) < $argc ; $i += 2) {
 $swf = swfparse($data, $replaceTable);
 // $swf['data'] = "datalen:".strlen($swf['data']); var_dump($swf);
 
-$n = swfas3strreplace($swf, $replaceTable);
+if ($argc === 2) {
+    swfas3strlist($swf);
+} else {
+    $n = swfas3strreplace($swf, $replaceTable);
+    echo  swfbuild($swf);
+}
 
-echo  swfbuild($swf);
+
