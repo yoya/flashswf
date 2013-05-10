@@ -111,7 +111,7 @@ function swfbuild($swf) {
         }
     }
     $movie = substr($data, 8, $swf['movieheaderLength']).join('', $tagList);
-    $length = strlen($movie);
+    $length = 8 + strlen($movie);
     $sig = $swf['sig'];
     if ($sig === 'CWS') {
         $movie = gzcompress($movie);
