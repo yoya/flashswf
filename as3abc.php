@@ -25,7 +25,7 @@ function abcRead_u30($data, &$offset) {
 
 function abcRead_s32($data, &$offset) {
     $prevOffset = $offset;
-    $v = abcRead_u30($data, &$offset);
+    $v = abcRead_u30($data, $offset);
     $byteLen = $offset - $prevOffset;
     if ($v >> (7 * $byteLen - 1)) { // sign bit
         $v = $v - (1 << (7 * $byteLen));
@@ -58,8 +58,8 @@ function abcSkip_u30($data, &$offset) {
     }
 }
 
-function abcSkip_u32($data, &$offset) { abcSkip_u30($data, &$offset); }
-function abcSkip_s32($data, &$offset) { abcSkip_u30($data, &$offset); }
+function abcSkip_u32($data, &$offset) { abcSkip_u30($data, $offset); }
+function abcSkip_s32($data, &$offset) { abcSkip_u30($data, $offset); }
 
 function abcWrite_u30($value) {
     $data = '';
